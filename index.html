@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>For You</title>
+<title>For Alvin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -21,13 +21,13 @@ html,body{height:100%}
 body{
   margin:0; background:radial-gradient(1200px 800px at 20% -10%, #1a1d24 0, #0c0d10 60%), var(--bg);
   color:var(--ink); font-family:Poppins, system-ui, sans-serif;
-  display:grid; place-items:center; overflow:hidden;
+  display:flex; justify-content:center; align-items:center; gap:20px; padding:20px; flex-wrap:wrap;
 }
 .hearts{position:fixed; inset:0; pointer-events:none; overflow:hidden;}
 .heart{position:absolute; bottom:-40px; filter:drop-shadow(0 2px 6px rgba(239,71,111,.4)); opacity:.8; animation:floatUp linear forwards;}
 @keyframes floatUp{to{transform:translateY(-110vh) rotate(20deg); opacity:0}}
 .wrap{position:relative; width:min(680px, 92vw)}
-.card{
+.card, .reply-card{
   background:linear-gradient(180deg, #1d212a, var(--card));
   border-radius:24px; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,.45);
   overflow:hidden; border:1px solid rgba(255,255,255,.06);
@@ -48,50 +48,32 @@ body{
   transition: transform .5s ease;
 }
 .env-flap.open {transform: rotateX(180deg);}
-.letter {
-  position:absolute;
-  inset:18% 8% 8% 8%;
+.letter, .reply-card .letter {
   background:var(--letter-bg);
   color:#2a2a2f;
   border-radius:16px;
   padding:18px;
-  transform:translateY(120%);
   box-shadow:0 10px 30px rgba(0,0,0,.25);
-  transition:transform .8s cubic-bezier(.2,.8,.2,1);
   overflow-y:auto;
-  z-index:1;
 }
-.letter.open {
-  transform:translateY(-4%);
-  z-index:4;
-}
-.open-btn {
-  position:absolute;
-  left:82px;
-  bottom:16px;
-  transform:translateX(-50%);
-  border:0;
-  background:#471331;
-  color:#fff;
-  padding:12px 16px;
-  border-radius:12px;
-  font-weight:700;
-  cursor:pointer;
-  z-index:5;
-}
-.close-btn{
-  position:absolute;
-  right:16px;
-  bottom:16px;
-  transform:translateX(-50%);
-  border:0;
-  background:#3e0c26;
-  color:#fff;
-  padding:12px 16px;
-  border-radius:12px;
-  font-weight:700;
-  cursor:pointer;
-  z-index:5;
+.letter{position:absolute; inset:18% 8% 8% 8%; transform:translateY(120%); transition:transform .8s cubic-bezier(.2,.8,.2,1); z-index:1;}
+.letter.open {transform:translateY(-4%); z-index:4;}
+.btn-row {position:absolute; bottom:16px; width:100%; display:flex; justify-content:center; gap:12px; z-index:5;}
+.btn-row button{padding:12px 16px; border-radius:12px; font-weight:700; border:none; cursor:pointer;}
+.open-btn{background:#471331; color:#fff;}
+.close-btn{background:#3e0c26; color:#fff;}
+.reply-btn{background:#ff476f; color:#fff; display:none;}
+
+.reply-card{display:none; width:min(400px,90vw); flex-shrink:0;}
+.reply-card h3{margin-top:0;}
+.reply-card textarea{width:100%; border-radius:8px; padding:8px; resize:none;}
+.reply-card button{margin-top:6px; padding:8px 12px; border-radius:8px; background:#471331; color:#fff; border:none; cursor:pointer;}
+#replyStatus{margin-top:6px; font-size:14px;}
+
+/* mobile stacking */
+@media(max-width:768px){
+  body{flex-direction:column; align-items:center;}
+  .wrap, .reply-card{width:90vw;}
 }
 </style>
 </head>
@@ -100,26 +82,40 @@ body{
 <div class="wrap">
   <div class="card">
     <h1 class="title">for <span id="theirName">You</span></h1>
-    <p class="subtitle">baca njink</p>
+    <p class="subtitle">Maybe you’re wondering who sent you this, but don’t think too hard about it. I just wanted to leave you a little note, so read it till the end, okay?</p>
     <div class="envelope">
       <div class="env-body"></div>
       <div class="env-flap"></div>
       <div class="letter" id="letter">
-        <h3>hey <span id="nick">you</span>,</h3>
+        <h3>Dear <span id="nick">you</span>,</h3>
         <p class="type" id="type"></p>
         <p style="margin-top:14px">– <span id="myName">me</span></p>
       </div>
-      <button class="open-btn" id="openBtn">open</button>
-      <button class="close-btn" id="closeBtn">close</button>
+      <div class="btn-row">
+        <button class="open-btn" id="openBtn">open</button>
+        <button class="close-btn" id="closeBtn">close</button>
+        <button class="reply-btn" id="replyBtn">reply</button>
+      </div>
     </div>
   </div>
 </div>
+<div class="reply-card" id="replyCard">
+  <h3>Write your reply</h3>
+  <textarea id="replyMessage" rows="6" placeholder="Type your reply here..."></textarea>
+  <button id="sendReply">send</button>
+  <p id="replyStatus"></p>
+</div>
 <script>
 const CONFIG = {
-  theirName: "aplin",
-  nickname: "pin",
+  theirName: "Alvin",
+  nickname: "Alvin",
   myName: "⭐",
-  message: ["hahayyy."],
+  message: [
+    "I still remember the first time we talked. When I asked if I should call you 'Alvin' or 'Redalpha' and you said I could call you both. You might not remember, but for me, that’s when I started noticing you. Since then, you’ve had this way of catching my attention without even trying… and honestly, there are more reasons, but I’ll save them for another time.",
+    "and congrats on being chosen as MPK president! I’m proud of you, and I believe you’ll be a kind, responsible, and inspiring leader.",
+    "That’s all for now. I hope this little message makes you smile, and I hope you don’t feel uncomfortable receiving it. it’s sent with good intentions (and maybe a little admiration). Sorry for writing in English… it just feels easier to say things this way without sounding too cheesy.",
+    "PS. if you're curious about who wrote this message, just hit me up."
+  ],
   typeDelay:26
 }
 document.getElementById('theirName').textContent = CONFIG.theirName
@@ -130,7 +126,15 @@ const letter = document.getElementById('letter')
 const flap = document.querySelector('.env-flap')
 const openBtn = document.getElementById('openBtn')
 const closeBtn = document.getElementById('closeBtn')
+const replyBtn = document.getElementById('replyBtn')
+const replyCard = document.getElementById('replyCard')
+const sendBtn = document.getElementById('sendReply')
+const replyMessage = document.getElementById('replyMessage')
+const replyStatus = document.getElementById('replyStatus')
+
 let opened = false
+let typed = false
+let typingIntervals = []
 
 openBtn.addEventListener('click', () => {
   if(opened) return
@@ -138,9 +142,9 @@ openBtn.addEventListener('click', () => {
   flap.classList.add('open')
   setTimeout(()=>{
     letter.classList.add('open')
-    const typeEl = document.getElementById('type')
-    typeEl.textContent = ''  // reset konten dulu
-    typeLines(CONFIG.message, document.getElementById('type'), CONFIG.typeDelay)
+    typeLines(CONFIG.message, document.getElementById('type'), CONFIG.typeDelay).then(()=>{
+      replyBtn.style.display='inline-block'
+    })
     burstHearts()
   },500)
 })
@@ -149,30 +153,46 @@ closeBtn.addEventListener('click', () => {
   letter.classList.remove('open')
   flap.classList.remove('open')
   opened=false
+  typed=false
+  document.getElementById('type').innerHTML=''
+  typingIntervals.forEach(interval=>clearInterval(interval))
+  typingIntervals = []
+  replyBtn.style.display='none'
+  replyCard.style.display='none'
 })
 
 async function typeLines(lines, el, delay=30){
+  if(typed) return
+  typed=true
+  el.innerHTML=''
   for(let i=0;i<lines.length;i++){
-    await typeText(lines[i], el, delay)
-    if(i<lines.length-1) el.innerHTML += "\n"
+    const p = document.createElement('p')
+    el.appendChild(p)
+    await typeText(lines[i], p, delay)
   }
 }
+
 function typeText(text, el, delay){
   return new Promise(res=>{
     let i=0
-    const t=setInterval(()=>{
-      el.textContent+=text[i]
+    const t = setInterval(()=>{
+      el.textContent += text[i]
       i++
-      if(i>=text.length){ clearInterval(t); res() }
+      if(i>=text.length){
+        clearInterval(t)
+        res()
+      }
     }, delay)
+    typingIntervals.push(t)
   })
 }
 
+// hearts
 const hearts=document.getElementById('hearts')
 function spawnHeart(){
   const span=document.createElement('span')
   span.className='heart'
-  span.textContent=Math.random()<.5?'⭐':'⭐'
+  span.textContent='⭐'
   span.style.left=Math.random()*100+'vw'
   span.style.fontSize=14+Math.random()*18+'px'
   span.style.animationDuration=4+Math.random()*5+'s'
@@ -180,6 +200,35 @@ function spawnHeart(){
   setTimeout(()=>span.remove(),10000)
 }
 function burstHearts(){ for(let i=0;i<24;i++) setTimeout(spawnHeart,i*120) }
+
+// reply toggle
+replyBtn.addEventListener('click', () => {
+  replyCard.style.display = replyCard.style.display==='none' ? 'block' : 'none'
+})
+
+// send reply to backend
+sendBtn.addEventListener('click', async (e) => {
+  e.preventDefault()
+  const message = replyMessage.value.trim()
+  if(!message) return
+  try {
+    const res = await fetch('http://localhost:3000/send-reply', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name: CONFIG.nickname, message })
+    })
+    const data = await res.json()
+    if(data.success){
+      replyStatus.textContent = 'Reply sent!'
+      replyMessage.value = ''
+    } else {
+      replyStatus.textContent = 'Failed to send reply.'
+    }
+  } catch(err){
+    replyStatus.textContent = 'Error connecting to server.'
+    console.error(err)
+  }
+})
 </script>
 </body>
 </html>

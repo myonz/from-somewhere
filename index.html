@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0f12;
+  --card:#16181d;
+  --ink:#f8f8fb;
+  --accent:#ef476f;
+  --accent2:#ffd166;
+  --letter-bg:#fffaf4;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:radial-gradient(1200px 800px at 20% -10%, #1a1d24 0, #0c0d10 60%), var(--bg);
+  color:var(--ink); font-family:Poppins, system-ui, sans-serif;
+  display:grid; place-items:center; overflow:hidden;
+}
+.hearts{position:fixed; inset:0; pointer-events:none; overflow:hidden;}
+.heart{position:absolute; bottom:-40px; filter:drop-shadow(0 2px 6px rgba(239,71,111,.4)); opacity:.8; animation:floatUp linear forwards;}
+@keyframes floatUp{to{transform:translateY(-110vh) rotate(20deg); opacity:0}}
+.wrap{position:relative; width:min(680px, 92vw)}
+.card{
+  background:linear-gradient(180deg, #1d212a, var(--card));
+  border-radius:24px; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,.45);
+  overflow:hidden; border:1px solid rgba(255,255,255,.06);
+}
+.title{font-family: "Playfair Display", serif; font-weight:700; font-size:clamp(28px, 6vw, 44px); line-height:1.05; margin:10px 0 14px}
+.subtitle{margin:0 0 14px; color:#cfd6e4}
+.envelope{position:relative; margin:10px auto 0; width:min(520px, 86vw); height:min(340px, 62vw); perspective:1200px;}
+.env-body{position:absolute; inset:0; border-radius:20px; background:linear-gradient(135deg, #ff9fb6, var(--accent)); box-shadow:0 20px 60px rgba(239,71,111,.45);}
+.env-flap {
+  position:absolute;
+  inset:0;
+  transform-origin:top;
+  background:conic-gradient(from 180deg at 50% 0%, var(--accent), #ff7a94, var(--accent));
+  clip-path:polygon(0 0, 100% 0, 50% 55%);
+  border-top-left-radius:20px;
+  border-top-right-radius:20px;
+  z-index:3;
+  transition: transform .5s ease;
+}
+.env-flap.open {transform: rotateX(180deg);}
+.letter {
+  position:absolute;
+  inset:18% 8% 8% 8%;
+  background:var(--letter-bg);
+  color:#2a2a2f;
+  border-radius:16px;
+  padding:18px;
+  transform:translateY(120%);
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  transition:transform .8s cubic-bezier(.2,.8,.2,1);
+  overflow-y:auto;
+  z-index:1;
+}
+.letter.open {
+  transform:translateY(-4%);
+  z-index:4;
+}
+.open-btn {
+  position:absolute;
+  left:82px;
+  bottom:16px;
+  transform:translateX(-50%);
+  border:0;
+  background:#471331;
+  color:#fff;
+  padding:12px 16px;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
+  z-index:5;
+}
+.close-btn{
+  position:absolute;
+  right:16px;
+  bottom:16px;
+  transform:translateX(-50%);
+  border:0;
+  background:#3e0c26;
+  color:#fff;
+  padding:12px 16px;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
+  z-index:5;
+}
+</style>
+</head>
+<body>
+<div class="hearts" id="hearts"></div>
+<div class="wrap">
+  <div class="card">
+    <h1 class="title">for <span id="theirName">You</span></h1>
+    <p class="subtitle">baca njink</p>
+    <div class="envelope">
+      <div class="env-body"></div>
+      <div class="env-flap"></div>
+      <div class="letter" id="letter">
+        <h3>hey <span id="nick">you</span>,</h3>
+        <p class="type" id="type"></p>
+        <p style="margin-top:14px">– <span id="myName">me</span></p>
+      </div>
+      <button class="open-btn" id="openBtn">open</button>
+      <button class="close-btn" id="closeBtn">close</button>
+    </div>
+  </div>
+</div>
+<script>
+const CONFIG = {
+  theirName: "aplin",
+  nickname: "pin",
+  myName: "⭐",
+  message: ["hahayyy."],
+  typeDelay:26
+}
+document.getElementById('theirName').textContent = CONFIG.theirName
+document.getElementById('nick').textContent = CONFIG.nickname
+document.getElementById('myName').textContent = CONFIG.myName
+
+const letter = document.getElementById('letter')
+const flap = document.querySelector('.env-flap')
+const openBtn = document.getElementById('openBtn')
+const closeBtn = document.getElementById('closeBtn')
+let opened = false
+
+openBtn.addEventListener('click', () => {
+  if(opened) return
+  opened = true
+  flap.classList.add('open')
+  setTimeout(()=>{
+    letter.classList.add('open')
+    const typeEl = document.getElementById('type')
+    typeEl.textContent = ''  // reset konten dulu
+    typeLines(CONFIG.message, document.getElementById('type'), CONFIG.typeDelay)
+    burstHearts()
+  },500)
+})
+
+closeBtn.addEventListener('click', () => {
+  letter.classList.remove('open')
+  flap.classList.remove('open')
+  opened=false
+})
+
+async function typeLines(lines, el, delay=30){
+  for(let i=0;i<lines.length;i++){
+    await typeText(lines[i], el, delay)
+    if(i<lines.length-1) el.innerHTML += "\n"
+  }
+}
+function typeText(text, el, delay){
+  return new Promise(res=>{
+    let i=0
+    const t=setInterval(()=>{
+      el.textContent+=text[i]
+      i++
+      if(i>=text.length){ clearInterval(t); res() }
+    }, delay)
+  })
+}
+
+const hearts=document.getElementById('hearts')
+function spawnHeart(){
+  const span=document.createElement('span')
+  span.className='heart'
+  span.textContent=Math.random()<.5?'⭐':'⭐'
+  span.style.left=Math.random()*100+'vw'
+  span.style.fontSize=14+Math.random()*18+'px'
+  span.style.animationDuration=4+Math.random()*5+'s'
+  hearts.appendChild(span)
+  setTimeout(()=>span.remove(),10000)
+}
+function burstHearts(){ for(let i=0;i<24;i++) setTimeout(spawnHeart,i*120) }
+</script>
+</body>
+</html>
